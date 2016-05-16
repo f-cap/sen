@@ -3,26 +3,26 @@ import threading
 import traceback
 
 import urwid
+from sen.tui.widgets.list.base import WidgetBase
 
-from sen.tui.widgets.list.base import VimMovementListBox
 from sen.util import _ensure_unicode
 
 
 logger = logging.getLogger(__name__)
 
 
-class ScrollableListBox(VimMovementListBox):
-    def __init__(self, text):
+class ScrollableListBox(WidgetBase):
+    def __init__(self, ui, text):
         text = _ensure_unicode(text)
         list_of_texts = text.split("\n")
         self.walker = urwid.SimpleFocusListWalker([
             urwid.AttrMap(urwid.Text(t, align="left", wrap="any"), "main_list_dg", "main_list_white")
             for t in list_of_texts
         ])
-        super().__init__(self.walker)
+        super().__init__(ui, self.walker)
 
 
-class AsyncScrollableListBox(VimMovementListBox):
+class AsyncScrollableListBox(WidgetBase):
     def __init__(self, generator, ui, static_data=None):
         self.log_texts = []
         if static_data:
@@ -34,7 +34,7 @@ class AsyncScrollableListBox(VimMovementListBox):
                                                      align="left", wrap="any"))
         walker = urwid.SimpleFocusListWalker(self.log_texts)
         walker.set_focus(len(walker) - 1)
-        super(AsyncScrollableListBox, self).__init__(walker)
+        super(AsyncScrollableListBox, self).__init__(ui, walker)
 
         def fetch_logs():
             line_w = urwid.AttrMap(

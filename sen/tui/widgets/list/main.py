@@ -112,10 +112,9 @@ class MainLineWidget(ResponsiveRowWidget):
 
 
 class MainListBox(ResponsiveTable):
-    def __init__(self, docker_backend, ui):
+    def __init__(self, ui, docker_backend):
         self.d = docker_backend
-        self.ui = ui
-        super(MainListBox, self).__init__(urwid.SimpleFocusListWalker([]))
+        super(MainListBox, self).__init__(ui, urwid.SimpleFocusListWalker([]))
 
         # urwid is not thread safe
         self.refresh_lock = threading.Lock()
@@ -201,13 +200,6 @@ class MainListBox(ResponsiveTable):
 
         return rows
 
-    @property
-    def focused_docker_object(self):
-        try:
-            return self.get_focus()[0].docker_object
-        except AttributeError as ex:
-            raise NotifyError("Can't select focused object")
-
     def filter(self, s, widgets_to_filter=None):
         s = s.strip()
         if not s:
@@ -280,7 +272,8 @@ class MainListBox(ResponsiveTable):
         self.filter_query = s
         return widgets
 
-    def keypress(self, size, key):
+    def nasrat(self):
+        return
         # TODO: log how long it took to run this
         # FIXME: put this into own file
         # these functions will be executed in threads

@@ -93,7 +93,7 @@ class TreeBuffer(Buffer):
     display_name = "Tree"
     tag = "T"
 
-    def __init__(self, docker_backend, ui):
+    def __init__(self, ui, docker_backend):
         """
         """
         self.widget = ImageTree(docker_backend, ui)
@@ -104,9 +104,9 @@ class MainListBuffer(Buffer):
     display_name = "Listing"
     tag = "M"
 
-    def __init__(self, docker_backend, ui):
+    def __init__(self, ui, docker_backend):
         self.ui = ui
-        self.widget = MainListBox(docker_backend, ui)
+        self.widget = MainListBox(ui, docker_backend)
         super().__init__()
 
     def refresh(self, focus_on_top=False):
@@ -166,8 +166,8 @@ class HelpBuffer(Buffer):
     tag = "H"
     display_name = ""
 
-    def __init__(self):
+    def __init__(self, ui):
         """
         """
-        self.widget = ScrollableListBox(HELP_TEXT)
+        self.widget = ScrollableListBox(ui, HELP_TEXT)
         super().__init__()

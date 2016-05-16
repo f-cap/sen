@@ -6,14 +6,13 @@ import logging
 import pprint
 import threading
 
-import math
 import urwid
 import urwidtrees
+from sen.tui.widgets.list.base import WidgetBase
 from urwid.decoration import BoxAdapter
 
 from sen.tui.chunks.elemental import LayerWidget, ContainerStatusWidget, ContainerOneLinerWidget
 from sen.tui.widgets.graph import ContainerInfoGraph
-from sen.tui.widgets.list.base import VimMovementListBox
 from sen.tui.widgets.list.util import get_map, RowWidget, UnselectableRowWidget
 from sen.tui.widgets.table import assemble_rows
 from sen.tui.widgets.util import SelectableText, ColorText, UnselectableListBox
@@ -32,15 +31,15 @@ class TagWidget(SelectableText):
         super().__init__(str(self.tag))
 
 
-class ImageInfoWidget(VimMovementListBox):
+class ImageInfoWidget(WidgetBase):
     """
     display info about image
     """
     def __init__(self, ui, docker_image):
-        self.ui = ui
-        self.docker_image = docker_image
-
         self.walker = urwid.SimpleFocusListWalker([])
+        super().__init__(ui, self.walker)
+
+        self.docker_image = docker_image
 
         # self.widgets = []
 
@@ -49,8 +48,6 @@ class ImageInfoWidget(VimMovementListBox):
         self._image_names()
         self._layers()
         self._labels()
-
-        super().__init__(self.walker)
 
         self.set_focus(0)  # or assemble list first and then stuff it into walker
 
@@ -287,15 +284,15 @@ class ProcessTree(urwidtrees.TreeBox):
         super().__init__(t)
 
 
-class ContainerInfoWidget(VimMovementListBox):
+class ContainerInfoWidget(WidgetBase):
     """
     display info about image
     """
     def __init__(self, ui, docker_container):
-        self.ui = ui
-        self.docker_container = docker_container
-
         self.walker = urwid.SimpleFocusListWalker([])
+        super().__init__(ui, self.walker)
+
+        self.docker_container = docker_container
 
         self.stop = threading.Event()
 
@@ -306,8 +303,6 @@ class ContainerInfoWidget(VimMovementListBox):
         self._resources()
         self._labels()
         self._logs()
-
-        super().__init__(self.walker)
 
         self.set_focus(0)  # or assemble list first and then stuff it into walker
 

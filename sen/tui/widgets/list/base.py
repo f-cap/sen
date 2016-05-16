@@ -3,6 +3,7 @@ import threading
 
 import urwid
 from sen.exceptions import NotifyError
+from sen.tui.commands.base import KeyNotMapped
 
 
 logger = logging.getLogger(__name__)
@@ -13,7 +14,8 @@ class WidgetBase(urwid.ListBox):
     common class fot widgets
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, ui, *args, **kwargs):
+        self.ui = ui
         self.search_string = None
         self.filter_query = None
         super().__init__(*args, **kwargs)
@@ -121,53 +123,22 @@ class WidgetBase(urwid.ListBox):
 
         return columns_list
 
-
-class VimMovementListBox(WidgetBase):
-    """
-    ListBox with vim-like movement which can be inherited in other widgets
-    """
-
-    def __init__(self, *args, **kwargs):
-        # we want "gg"!
-        self.cached_key = None
-        super().__init__(*args, **kwargs)
+    @property
+    def focused_docker_object(self):
+        return self.get_focus()[0].docker_object
 
     def keypress(self, size, key):
-        logger.debug("VimListBox keypress %r", key)
+        logger.debug("%s keypress %r", self.__class__.__name__, key)
 
-        # FIXME: workaround so we allow "gg" only, and not "g*"
-        if self.cached_key == "g" and key != "g":
-            self.cached_key = None
+        try:
+            self.ui.run_command_by_key(
+                key,
+                docker_object=getattr(self, "focused_docker_object", None),
+                size=size
+            )
+        except KeyNotMapped:
+            key = super(WidgetBase, self).keypress(size, key)
+            logger.debug("was key handled? %s", key)
+            return key
+        return
 
-        if key == "j":
-            return super().keypress(size, "down")
-        elif key == "k":
-            return super().keypress(size, "up")
-        elif key == "ctrl d":
-            try:
-                self.set_focus(self.get_focus()[1] + 10)
-            except IndexError:
-                self.set_focus(len(self.body) - 1)
-            self.reload_widget()
-            return
-        elif key == "ctrl u":
-            try:
-                self.set_focus(self.get_focus()[1] - 10)
-            except IndexError:
-                self.set_focus(0)
-            self.reload_widget()
-            return
-        elif key == "G":
-            self.set_focus(len(self.body) - 1)
-            self.reload_widget()
-            return
-        elif key == "g":
-            if self.cached_key is None:
-                self.cached_key = "g"
-            elif self.cached_key == "g":
-                self.set_focus(0)
-                self.reload_widget()
-                self.cached_key = None
-            return
-        key = super().keypress(size, key)
-        return key
